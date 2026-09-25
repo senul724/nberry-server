@@ -69,7 +69,7 @@ func RefreshTokenHandler(c *gin.Context) {
 		return
 	}
 
-	var customer models.Customer
+	var customer models.User
 	if err := connections.DB.First(&customer, "id = ?", userUUID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "user not found"})

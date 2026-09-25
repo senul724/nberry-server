@@ -13,8 +13,8 @@ import (
 	"gorm.io/gorm"
 )
 
-func LoginWithPassword(ctx context.Context, email string, password string) (*models.Customer, error) {
-	var customer models.Customer
+func LoginWithPassword(ctx context.Context, email string, password string) (*models.User, error) {
+	var customer models.User
 	err := connections.DB.WithContext(ctx).Where("email = ?", email).First(&customer).Error
 	if err != nil {
 		return nil, err
@@ -39,7 +39,7 @@ func SendResetPasswordOTP(ctx context.Context, email string) error {
 		return errors.New("redis connection is not initialized")
 	}
 
-	var customer models.Customer
+	var customer models.User
 	err := connections.DB.Where("email = ?", email).First(&customer).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -83,7 +83,7 @@ func ResetPassword(ctx context.Context, email string, otp string, newPassword st
 	}
 
 	hashStr := string(hashedPassword)
-	result := connections.DB.Model(&models.Customer{}).Where("email = ?", email).Update("password", &hashStr)
+	result := connections.DB.Model(&models.User{}).Where("email = ?", email).Update("password", &hashStr)
 	if result.Error != nil {
 		return fmt.Errorf("failed to update password: %w", result.Error)
 	}

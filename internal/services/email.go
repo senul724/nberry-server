@@ -29,7 +29,7 @@ type CheckEmailResult struct {
 // CheckEmail checks if a customer exists under the given email,
 // and whether a password has been set for that account.
 func CheckEmail(email string) (userAvailable bool, passwordAvailable bool, err error) {
-	var customer models.Customer
+	var customer models.User
 	err = connections.DB.Where("email = ?", email).First(&customer).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -64,7 +64,7 @@ func SendLoginOTP(ctx context.Context, email string) error {
 
 // LoginWithOTP validates the OTP from Redis, ensures the user exists,
 // generates refresh and session tokens, and sends them as HTTP-only cookies.
-func LoginWithOTP(ctx context.Context, email string, otp string) (*models.Customer, error) {
+func LoginWithOTP(ctx context.Context, email string, otp string) (*models.User, error) {
 	if connections.Redis == nil {
 		return nil, errors.New("redis connection is not initialized")
 	}
@@ -74,7 +74,7 @@ func LoginWithOTP(ctx context.Context, email string, otp string) (*models.Custom
 		return nil, err
 	}
 
-	var customer models.Customer
+	var customer models.User
 	err = connections.DB.Where("email = ?", email).First(&customer).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -87,7 +87,7 @@ func LoginWithOTP(ctx context.Context, email string, otp string) (*models.Custom
 
 // RegisterWithOTP validates the OTP from Redis, ensures the user does not exist and
 // creates the customer in the database.
-func RegisterWithOTP(ctx context.Context, name string, email string, otp string) (*models.Customer, error) {
+func RegisterWithOTP(ctx context.Context, name string, email string, otp string) (*models.User, error) {
 	if connections.Redis == nil {
 		return nil, errors.New("redis connection is not initialized")
 	}
@@ -97,7 +97,7 @@ func RegisterWithOTP(ctx context.Context, name string, email string, otp string)
 		return nil, err
 	}
 
-	var existing models.Customer
+	var existing models.User
 	err = connections.DB.Where("email = ?", email).First(&existing).Error
 	if err == nil {
 		return nil, errors.New("user already registered with this email")
@@ -105,7 +105,7 @@ func RegisterWithOTP(ctx context.Context, name string, email string, otp string)
 		return nil, err
 	}
 
-	customer := models.Customer{
+	customer := models.User{
 		Name:  name,
 		Email: email,
 	}

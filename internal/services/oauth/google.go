@@ -52,8 +52,8 @@ func (s *Service) Verify(ctx context.Context, rawIDToken string) (*oidc.IDToken,
 // FindOrCreateByGoogle looks up a customer by email.
 // If the customer exists, it updates the name and photo URL from the Google claims and returns the customer.
 // If the customer does not exist, it creates a new one using the provided Google profile information.
-func FindOrCreateByGoogle(ctx context.Context, email, name, picture string) (*models.Customer, error) {
-	var customer models.Customer
+func FindOrCreateByGoogle(ctx context.Context, email, name, picture string) (*models.User, error) {
+	var customer models.User
 	err := connections.DB.WithContext(ctx).Where("email = ?", email).First(&customer).Error
 	if err == nil {
 		// Existing user — update profile fields from Google if needed
@@ -75,7 +75,7 @@ func FindOrCreateByGoogle(ctx context.Context, email, name, picture string) (*mo
 	}
 
 	// New user — create
-	customer = models.Customer{
+	customer = models.User{
 		Name:     name,
 		Email:    email,
 		PhotoURL: &picture,

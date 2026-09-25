@@ -35,7 +35,7 @@ func resolveUser(c *gin.Context) (*ResolvedUser, error) {
 
 // IssueAuthTokens generates access, refresh, and session tokens for the given customer,
 // stores the token pair in Redis, creates a DB session, sets the cookies, and returns the access and refresh tokens.
-func IssueAuthTokens(c *gin.Context, customer *models.Customer) (string, string, error) {
+func IssueAuthTokens(c *gin.Context, customer *models.User) (string, string, error) {
 	userID := customer.ID.String()
 
 	accessToken, accessJTI, err := tokens.GenerateAccessToken(customer.Email, userID, "")
