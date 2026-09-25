@@ -17,5 +17,5 @@ type Session struct {
 	IPAddress     string    `gorm:"type:text"                json:"ip_address"`
 
 	// Association
-	User Customer `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE" json:"user,omitempty"`
+	User User `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE" json:"user,omitempty"`
 }
