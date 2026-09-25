@@ -4,7 +4,6 @@ import (
 	"IAM-server/internal/connections"
 	"IAM-server/internal/routes"
 	"log"
-	"net/http"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -14,14 +13,17 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// @title IAM Server
+// @title Notify Berry Server
 // @version 1.0
-// @description Backend API for IAM server.
+// @description Backend API for Notify Berry server.
 // @host localhost:3030
 // @BasePath /api
 // @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Authorization
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name X-API-Key
 func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found, using system environment variables")
@@ -33,8 +35,16 @@ func main() {
 
 	r := gin.Default()
 
-	// CORS middleware
-	r.Use(cors.New(cors.Config{
+	// swagger docs
+	r.GET("/swagger/*any",
+		ginSwagger.WrapHandler(swaggerFiles.Handler),
+	)
+
+	publicRoutes := r.Group("/api")
+	internalRoutes := r.Group("/api")
+
+	// CORS middleware internal
+	internalRoutes.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000", "http://localhost:3001", "http://localhost:3002"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "X-Device-Type", "X-Refresh-Token"},
@@ -42,23 +52,26 @@ func main() {
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
-	r.GET("/swagger/*any",
-		ginSwagger.WrapHandler(swaggerFiles.Handler),
-	)
 
-	api := r.Group("/api")
-
-	api.GET("/hi", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"Message": "Hi there",
-		})
-	})
+	// CORS middleware public
+	publicRoutes.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"}, // safe here, see below
+		AllowCredentials: false,         // must be false if using "*"
+		AllowMethods:     []string{"GET", "POST", "OPTIONS"},
+		AllowHeaders:     []string{"Content-Type", "Authorization", "X-API-Key"},
+	}))
 
 	// auth routes
-	routes.SetAuthRoutes(api)
+	routes.SetAuthRoutes(internalRoutes)
 
-	// note routes
-	routes.SetNoteRoutes(api)
+	// app routes
+	routes.SetAppRoutes(internalRoutes)
+
+	// subscription routes
+	routes.SetSubscriptionRoutes(internalRoutes)
+
+	// vendor routes (public push endpoints)
+	routes.SetVendorRoutes(publicRoutes)
 
 	r.Run(":3030")
 }
