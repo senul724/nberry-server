@@ -3,11 +3,10 @@ package main
 import (
 	"IAM-server/internal/connections"
 	"IAM-server/internal/routes"
+	"IAM-server/internal/utils"
 	"log"
 	"os"
-	"time"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	swaggerFiles "github.com/swaggo/files"
@@ -45,26 +44,11 @@ func main() {
 		ginSwagger.WrapHandler(swaggerFiles.Handler),
 	)
 
+	// dynamic CORS for public and internal routes
+	r.Use(utils.CORS())
+
 	publicRoutes := r.Group("/api")
 	internalRoutes := r.Group("/api")
-
-	// CORS middleware internal
-	internalRoutes.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000", "http://localhost:3001", "http://localhost:3002"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "X-Device-Type", "X-Refresh-Token"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-	}))
-
-	// CORS middleware public
-	publicRoutes.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"}, // safe here, see below
-		AllowCredentials: false,         // must be false if using "*"
-		AllowMethods:     []string{"GET", "POST", "OPTIONS"},
-		AllowHeaders:     []string{"Content-Type", "Authorization", "X-API-Key"},
-	}))
 
 	// auth routes
 	routes.SetAuthRoutes(internalRoutes)
