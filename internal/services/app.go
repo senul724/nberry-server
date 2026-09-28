@@ -203,3 +203,43 @@ func GetAppStats(ctx context.Context, userID string, appID string) (*AppStats, e
 
 	return &stats, nil
 }
+
+// RegenerateAppSecret generates a new secret key for an app owned by the user, updates the hash in the DB, and returns the plain secret.
+func RegenerateAppSecret(ctx context.Context, userID string, appID string) (string, error) {
+	uUUID, err := uuid.Parse(userID)
+	if err != nil {
+		return "", fmt.Errorf("invalid user ID: %w", err)
+	}
+
+	aUUID, err := uuid.Parse(appID)
+	if err != nil {
+		return "", fmt.Errorf("invalid app ID: %w", err)
+	}
+
+	var app models.App
+	err = connections.DB.WithContext(ctx).
+		Where("id = ? AND user_id = ?", aUUID, uUUID).
+		First(&app).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return "", errors.New("app not found")
+		}
+		return "", fmt.Errorf("failed to find app: %w", err)
+	}
+
+	rawSecret, err := GenerateAppSecret()
+	if err != nil {
+		return "", err
+	}
+
+	secretHash := HashAppSecret(rawSecret)
+
+	if err := connections.DB.WithContext(ctx).
+		Model(&app).
+		Update("secret_hash", secretHash).Error; err != nil {
+		return "", fmt.Errorf("failed to update app secret: %w", err)
+	}
+
+	return rawSecret, nil
+}

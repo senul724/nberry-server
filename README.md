@@ -154,6 +154,7 @@ Mobile App (Customer)              Notify Berry Server              Vendor Backe
 * `GET    /api/apps` — List all apps owned by the authenticated user.
 * `GET    /api/apps/:id` — Get details of a specific app owned by the user.
 * `GET    /api/apps/:id/stats` — Get subscriber and memo statistics for a specific app owned by the user.
+* `POST   /api/apps/:id/regenerate-secret` — Rotate and regenerate the API secret key for an app owned by the user.
 * `DELETE /api/apps/:id` — Delete an app (cascades to all subscriptions and memos).
 
 ### Subscriptions (`/api/subscriptions`) *(Requires Bearer Token)*

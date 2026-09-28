@@ -214,3 +214,47 @@ func GetAppStatsHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, stats)
 }
+
+// RegenerateAppSecretHandler rotates the API secret key for an application.
+// @Summary Regenerate application secret
+// @Tags Apps
+// @Security BearerAuth
+// @Produce json
+// @Param id path string true "App ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /apps/{id}/regenerate-secret [post]
+func RegenerateAppSecretHandler(c *gin.Context) {
+	user, err := resolveUser(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	appID, ok := resolveAppID(c)
+	if !ok {
+		return
+	}
+
+	newSecret, err := services.RegenerateAppSecret(c.Request.Context(), user.ID, appID)
+	if err != nil {
+		if err.Error() == "app not found" {
+			c.JSON(http.StatusNotFound, gin.H{"error": "app not found"})
+			return
+		}
+		if strings.Contains(err.Error(), "invalid") {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to regenerate secret"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":    "Secret key regenerated successfully",
+		"secret_key": newSecret,
+	})
+}

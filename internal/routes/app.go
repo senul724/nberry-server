@@ -15,5 +15,6 @@ func SetAppRoutes(api *gin.RouterGroup) {
 	apps.GET("/:id", handlers.GetAppHandler)
 	apps.GET("/:id/stats", handlers.GetAppStatsHandler)
 	apps.POST("", handlers.CreateAppHandler)
+	apps.POST("/:id/regenerate-secret", handlers.RegenerateAppSecretHandler)
 	apps.DELETE("/:id", handlers.DeleteAppHandler)
 }
