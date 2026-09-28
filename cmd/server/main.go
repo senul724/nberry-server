@@ -45,6 +45,7 @@ func main() {
 	)
 
 	// dynamic CORS for public and internal routes
+	// if a new public route group is created, add to the matcher
 	r.Use(utils.CORS())
 
 	publicRoutes := r.Group("/api")

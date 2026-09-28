@@ -173,3 +173,44 @@ func GetAppHandler(c *gin.Context) {
 		"app": app,
 	})
 }
+
+// GetAppStatsHandler retrieves stats for an app by ID.
+// @Summary Get application statistics
+// @Tags Apps
+// @Security BearerAuth
+// @Produce json
+// @Param id path string true "App ID"
+// @Success 200 {object} services.AppStats
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /apps/{id}/stats [get]
+func GetAppStatsHandler(c *gin.Context) {
+	user, err := resolveUser(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	appID, ok := resolveAppID(c)
+	if !ok {
+		return
+	}
+
+	stats, err := services.GetAppStats(c.Request.Context(), user.ID, appID)
+	if err != nil {
+		if err.Error() == "app not found" {
+			c.JSON(http.StatusNotFound, gin.H{"error": "app not found"})
+			return
+		}
+		if strings.Contains(err.Error(), "invalid") {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to retrieve app stats"})
+		return
+	}
+
+	c.JSON(http.StatusOK, stats)
+}

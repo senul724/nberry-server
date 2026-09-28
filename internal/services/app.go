@@ -138,3 +138,68 @@ func GetAppByID(ctx context.Context, userID string, appID string) (*models.App, 
 
 	return &app, nil
 }
+
+// AppStats holds statistics for an application.
+type AppStats struct {
+	BroadcastSubscribersCount int64 `json:"broadcast_subscribers_count"`
+	UnicastSubscribersCount   int64 `json:"unicast_subscribers_count"`
+	TotalBroadcastMemosSent   int64 `json:"total_broadcast_memos_sent"`
+	TotalDirectMemosSent      int64 `json:"total_direct_memos_sent"`
+}
+
+// GetAppStats retrieves statistics for an app owned by the user.
+func GetAppStats(ctx context.Context, userID string, appID string) (*AppStats, error) {
+	uUUID, err := uuid.Parse(userID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user ID: %w", err)
+	}
+
+	aUUID, err := uuid.Parse(appID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid app ID: %w", err)
+	}
+
+	var app models.App
+	err = connections.DB.WithContext(ctx).
+		Where("id = ? AND user_id = ?", aUUID, uUUID).
+		First(&app).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("app not found")
+		}
+		return nil, fmt.Errorf("failed to find app: %w", err)
+	}
+
+	var stats AppStats
+
+	if err := connections.DB.WithContext(ctx).
+		Model(&models.BroadcastSub{}).
+		Where("app_id = ?", aUUID).
+		Count(&stats.BroadcastSubscribersCount).Error; err != nil {
+		return nil, fmt.Errorf("failed to count broadcast subscribers: %w", err)
+	}
+
+	if err := connections.DB.WithContext(ctx).
+		Model(&models.UnicastSub{}).
+		Where("app_id = ?", aUUID).
+		Count(&stats.UnicastSubscribersCount).Error; err != nil {
+		return nil, fmt.Errorf("failed to count unicast subscribers: %w", err)
+	}
+
+	if err := connections.DB.WithContext(ctx).
+		Model(&models.BroadcastMemo{}).
+		Where("app_id = ?", aUUID).
+		Count(&stats.TotalBroadcastMemosSent).Error; err != nil {
+		return nil, fmt.Errorf("failed to count broadcast memos: %w", err)
+	}
+
+	if err := connections.DB.WithContext(ctx).
+		Model(&models.DirectMemo{}).
+		Where("app_id = ?", aUUID).
+		Count(&stats.TotalDirectMemosSent).Error; err != nil {
+		return nil, fmt.Errorf("failed to count direct memos: %w", err)
+	}
+
+	return &stats, nil
+}

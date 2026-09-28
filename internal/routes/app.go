@@ -13,6 +13,7 @@ func SetAppRoutes(api *gin.RouterGroup) {
 
 	apps.GET("", handlers.GetAppsHandler)
 	apps.GET("/:id", handlers.GetAppHandler)
+	apps.GET("/:id/stats", handlers.GetAppStatsHandler)
 	apps.POST("", handlers.CreateAppHandler)
 	apps.DELETE("/:id", handlers.DeleteAppHandler)
 }
