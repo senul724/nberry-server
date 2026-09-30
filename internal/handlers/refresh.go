@@ -29,14 +29,8 @@ func RefreshTokenHandler(c *gin.Context) {
 	cookieToken, err := c.Cookie(services.REFRESH_COOKIE_NAME)
 	if err == nil && cookieToken != "" {
 		refreshTokenString = cookieToken
-	} else {
-		// Fallback to Authorization header if cookie is absent
-		authHeader := c.GetHeader("Authorization")
-		if authHeader != "" && len(authHeader) > 7 && authHeader[:7] == "Bearer " {
-			refreshTokenString = authHeader[7:]
-		} else if customHeader := c.GetHeader("X-Refresh-Token"); customHeader != "" {
-			refreshTokenString = customHeader
-		}
+	} else if customHeader := c.GetHeader("X-Refresh-Token"); customHeader != "" {
+		refreshTokenString = customHeader
 	}
 
 	if refreshTokenString == "" {

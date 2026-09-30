@@ -11,6 +11,11 @@ func SetSubscriptionRoutes(api *gin.RouterGroup) {
 	subs := api.Group("/subscriptions")
 	subs.Use(middleware.ProtectRoute())
 
+	// Get subscriptions
+	subs.GET("", handlers.GetCustomerSubscriptionsHandler)
+	subs.GET("/broadcast", handlers.GetCustomerBroadcastSubscriptionsHandler)
+	subs.GET("/unicast", handlers.GetCustomerUnicastSubscriptionsHandler)
+
 	// Broadcast subscriptions
 	subs.POST("/broadcast", handlers.SubscribeBroadcastHandler)
 	subs.DELETE("/broadcast/:app_id", handlers.UnsubscribeBroadcastHandler)
