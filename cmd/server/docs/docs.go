@@ -16,6 +16,11 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {},
     "securityDefinitions": {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "name": "X-API-Key",
+            "in": "header"
+        },
         "BearerAuth": {
             "type": "apiKey",
             "name": "Authorization",
@@ -30,8 +35,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:3030",
 	BasePath:         "/api",
 	Schemes:          []string{},
-	Title:            "IAM Server",
-	Description:      "Backend API for IAM server.",
+	Title:            "Notify Berry Server",
+	Description:      "Backend API for Notify Berry server.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

@@ -1,8 +1,8 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "Backend API for IAM server.",
-        "title": "IAM Server",
+        "description": "Backend API for Notify Berry server.",
+        "title": "Notify Berry Server",
         "contact": {},
         "version": "1.0"
     },
@@ -10,6 +10,11 @@
     "basePath": "/api",
     "paths": {},
     "securityDefinitions": {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "name": "X-API-Key",
+            "in": "header"
+        },
         "BearerAuth": {
             "type": "apiKey",
             "name": "Authorization",

@@ -163,6 +163,15 @@ Mobile App (Customer)              Notify Berry Server              Vendor Backe
 * `POST   /api/subscriptions/unicast` — Subscribe authenticated user to unicast (`{ "app_id": "...", "vendor_user_id": "..." }`). Generates secret key, stores SHA-256 hash, and calls the app's `unicast_callback_url`.
 * `DELETE /api/subscriptions/unicast/:app_id` — Unsubscribe authenticated user from unicast.
 
+### Customer (`/api/customer`) *(Requires Bearer Token)*
+* `PUT    /api/customer/notify-token` — Update customer FCM/APNs push notification token (`{ "notify_token": "..." }`).
+* `DELETE /api/customer/notify-token` — Clear customer push notification token on logout.
+* `GET    /api/customer/messages/broadcast` — Fetch broadcast memo inbox for all subscribed apps (optional `?app_id=...&limit=50&offset=0`).
+* `GET    /api/customer/messages/direct` — Fetch direct 1-to-1 memos targeted to the user (optional `?app_id=...&limit=50&offset=0`).
+* `GET    /api/customer/subscriptions` — List subscribed vendor apps for both broadcast and unicast (or `?type=broadcast|unicast`).
+* `GET    /api/customer/subscriptions/broadcast` — List subscribed vendor apps for broadcast only.
+* `GET    /api/customer/subscriptions/unicast` — List subscribed vendor apps for unicast only.
+
 ### Vendor Push (`/api/vendor` or `/api/push`) *(Requires `X-API-Key` or `Authorization: Bearer <app_secret>`)*
 * `POST   /api/vendor/broadcast` — Push a broadcast memo to all app subscribers (`{ "title": "...", "content": "...", "image": "..." }`).
 * `POST   /api/vendor/unicast` — Push a direct memo to an individual subscriber via `unicast_key` or `user_id` (`{ "unicast_key": "...", "title": "...", "content": "...", "image": "..." }`).

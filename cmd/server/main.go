@@ -63,5 +63,8 @@ func main() {
 	// vendor routes (public push endpoints)
 	routes.SetVendorRoutes(publicRoutes)
 
+	// customer routes
+	routes.SetCustomerRoutes(internalRoutes)
+
 	r.Run(":3030")
 }

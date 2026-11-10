@@ -2,11 +2,15 @@ basePath: /api
 host: localhost:3030
 info:
   contact: {}
-  description: Backend API for IAM server.
-  title: IAM Server
+  description: Backend API for Notify Berry server.
+  title: Notify Berry Server
   version: "1.0"
 paths: {}
 securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: X-API-Key
+    type: apiKey
   BearerAuth:
     in: header
     name: Authorization
